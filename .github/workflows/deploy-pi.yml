@@ -1,0 +1,71 @@
+name: Deploy to Raspberry Pi
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref/SHA to deploy. Defaults to the workflow commit."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fizmo-pi-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Run CI checks before deploy
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m unittest discover -s tests
+          python -m fizmo.cli.converse --duration 0.1 --mock-rms 0.02
+
+      - name: Set deploy variables
+        id: deploy-vars
+        shell: bash
+        run: |
+          DEPLOY_REF="${{ inputs.ref }}"
+          if [ -z "$DEPLOY_REF" ]; then
+            DEPLOY_REF="${{ github.sha }}"
+          fi
+          echo "deploy_ref=$DEPLOY_REF" >> "$GITHUB_OUTPUT"
+          echo "pi_port=${FIZMO_PI_PORT:-22}" >> "$GITHUB_OUTPUT"
+        env:
+          FIZMO_PI_PORT: ${{ secrets.FIZMO_PI_PORT }}
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.FIZMO_PI_SSH_KEY }}" > ~/.ssh/fizmo_pi_key
+          chmod 600 ~/.ssh/fizmo_pi_key
+          ssh-keyscan -p "${{ steps.deploy-vars.outputs.pi_port }}" "${{ secrets.FIZMO_PI_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy selected ref on Pi
+        shell: bash
+        run: |
+          ssh -i ~/.ssh/fizmo_pi_key \
+            -p "${{ steps.deploy-vars.outputs.pi_port }}" \
+            "${{ secrets.FIZMO_PI_USER }}@${{ secrets.FIZMO_PI_HOST }}" \
+            "FIZMO_APP_DIR='${{ secrets.FIZMO_APP_DIR }}' FIZMO_DEPLOY_REF='${{ steps.deploy-vars.outputs.deploy_ref }}' bash -s" \
+            < deploy/deploy-pi.sh

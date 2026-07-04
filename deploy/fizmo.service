@@ -1,0 +1,16 @@
+[Unit]
+Description=Fizmo robot runtime
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__FIZMO_USER__
+WorkingDirectory=__FIZMO_APP_DIR__
+Environment=PYTHONUNBUFFERED=1
+ExecStart=__FIZMO_APP_DIR__/.venv/bin/python -m fizmo.cli.service --interval 10
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

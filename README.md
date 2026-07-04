@@ -197,6 +197,14 @@ python -m fizmo.cli.converse --duration 0.1
 python -m fizmo.cli.converse --duration 0.1 --mock-rms 0.02
 ```
 
+## CI/CD
+
+GitHub Actions runs unit tests and mock smoke checks on pushes and pull requests to `main`.
+
+Deployment to the Raspberry Pi is manual. The deploy workflow connects to the Pi over SSH, checks out the selected Git ref on the Pi, installs Fizmo locally, runs smoke checks, and restarts `fizmo.service` if installed.
+
+See [docs/deployment.md](docs/deployment.md).
+
 ## Behavior Logs
 
 Behavior logs are JSONL files under the configured log directory. Retention is controlled by [config/robot.ini](config/robot.ini):

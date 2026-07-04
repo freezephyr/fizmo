@@ -26,6 +26,7 @@ fizmo-listen = "fizmo.cli.listen:main"
 fizmo-logs = "fizmo.cli.logs:main"
 fizmo-read-imu = "fizmo.cli.read_imu:main"
 fizmo-run-tool = "fizmo.cli.run_tool:main"
+fizmo-service = "fizmo.cli.service:main"
 
 [build-system]
 requires = ["setuptools>=69"]
