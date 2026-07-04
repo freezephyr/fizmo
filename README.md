@@ -15,6 +15,19 @@ actor command + robot state
   -> tool returns success/failure
 ```
 
+The first conversation path is:
+
+```text
+user
+  -> microphone
+  -> Whisper / speech-to-text
+  -> text LLM
+  -> response text
+  -> display
+```
+
+Speaker and text-to-speech will be added after the audio output hardware arrives.
+
 Each body tool delegates to a behavior model. The current behavior models are deterministic placeholders; later, each one can be replaced with a learned model without changing the agent-facing tool name.
 
 ```text
@@ -65,6 +78,7 @@ Body tools:
 Interaction tools:
 
 - `show_face(expression, text=None)`
+- `listen(duration_s=None)`
 - `speak(text)`
 
 Future tools:
@@ -110,6 +124,7 @@ Tool calls can also be smoke-tested with mock hardware:
 python -m fizmo.cli.run_tool stand
 python -m fizmo.cli.run_tool walk --steps 2
 python -m fizmo.cli.run_tool tilt_head --direction left
+python -m fizmo.cli.run_tool listen --duration 1
 ```
 
 ## IMU State
@@ -135,6 +150,51 @@ On the Raspberry Pi, after enabling I2C and installing `smbus2`:
 
 ```bash
 python -m fizmo.cli.read_imu --real
+```
+
+## Audio Input
+
+Fizmo treats the USB microphone as a hardware adapter. The first Pi implementation uses ALSA `arecord`, so the robot can validate audio capture before conversation logic is connected.
+
+Configured audio values live in [config/robot.ini](config/robot.ini):
+
+```ini
+[audio]
+microphone_kind = usb_alsa
+input_device = default
+sample_rate_hz = 16000
+channels = 1
+listen_seconds = 3.0
+speech_rms_threshold = 0.01
+```
+
+Mock listen:
+
+```powershell
+python -m fizmo.cli.listen --duration 1
+```
+
+On the Raspberry Pi, after plugging in the USB mic and confirming ALSA sees it:
+
+```bash
+python -m fizmo.cli.listen --real --duration 3
+python -m fizmo.cli.listen --real --duration 3 --save-wav captures/mic-test.wav
+```
+
+## Conversation
+
+Conversation is separated into replaceable adapters:
+
+- `Microphone` captures audio.
+- `SpeechToText` transcribes audio. The planned implementation boundary is Whisper.
+- `TextModel` generates the text response.
+- `Display` presents the response.
+
+Run one mock conversation turn:
+
+```powershell
+python -m fizmo.cli.converse --duration 0.1
+python -m fizmo.cli.converse --duration 0.1 --mock-rms 0.02
 ```
 
 ## Behavior Logs

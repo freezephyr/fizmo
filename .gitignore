@@ -13,6 +13,7 @@ venv312/
 
 # Robot runtime output
 logs/
+captures/
 ppo_nebbybot_log/
 *.zip
 

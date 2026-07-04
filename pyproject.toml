@@ -21,6 +21,8 @@ sim = [
 
 [project.scripts]
 fizmo-calibrate-servos = "fizmo.cli.calibrate_servos:main"
+fizmo-converse = "fizmo.cli.converse:main"
+fizmo-listen = "fizmo.cli.listen:main"
 fizmo-logs = "fizmo.cli.logs:main"
 fizmo-read-imu = "fizmo.cli.read_imu:main"
 fizmo-run-tool = "fizmo.cli.run_tool:main"

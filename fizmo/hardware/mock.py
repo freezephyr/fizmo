@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from fizmo.hardware.interfaces import Camera, CameraFrame, Display, ImuSensor, RawImuSensor, ServoBus, Speaker
+from fizmo.hardware.interfaces import AudioSample, Camera, CameraFrame, Display, ImuSensor, Microphone, RawImuSensor, ServoBus, Speaker
 from fizmo.models import ImuReading, RawImuSample
 
 
@@ -58,3 +58,24 @@ class MockCamera(Camera):
 
     def capture(self) -> CameraFrame:
         return self.frame
+
+
+@dataclass
+class MockMicrophone(Microphone):
+    sample_rate_hz: int = 16000
+    channels: int = 1
+    sample_width_bytes: int = 2
+    rms: float = 0.0
+
+    def listen(self, duration_s: float | None = None) -> AudioSample:
+        duration = 0.1 if duration_s is None else duration_s
+        frame_count = max(1, int(self.sample_rate_hz * duration))
+        pcm = b"\x00" * frame_count * self.channels * self.sample_width_bytes
+        return AudioSample(
+            pcm=pcm,
+            sample_rate_hz=self.sample_rate_hz,
+            channels=self.channels,
+            sample_width_bytes=self.sample_width_bytes,
+            duration_s=duration,
+            rms=self.rms,
+        )

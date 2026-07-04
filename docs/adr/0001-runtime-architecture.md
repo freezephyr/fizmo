@@ -18,6 +18,7 @@ Use a layered runtime:
 - Hardware adapters isolate real devices from mock/test implementations.
 - State estimation consumes IMU, servo, camera, and audio state and reports robot state.
 - Config owns hardware mapping, calibration, and user-facing settings such as wake word.
+- Conversation flows from microphone capture to speech-to-text, text model response, and display output.
 
 The agent does not command servos directly.
 

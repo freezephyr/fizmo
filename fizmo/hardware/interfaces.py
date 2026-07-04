@@ -15,6 +15,21 @@ class CameraFrame:
     timestamp: float = field(default_factory=time)
 
 
+@dataclass(frozen=True)
+class AudioSample:
+    pcm: bytes
+    sample_rate_hz: int
+    channels: int
+    sample_width_bytes: int
+    duration_s: float
+    rms: float
+    timestamp: float = field(default_factory=time)
+
+    @property
+    def has_signal(self) -> bool:
+        return self.rms > 0.0
+
+
 class ServoBus(ABC):
     @abstractmethod
     def set_angle(self, servo_name: str, angle_deg: float) -> None:
@@ -56,4 +71,10 @@ class Speaker(ABC):
 class Camera(ABC):
     @abstractmethod
     def capture(self) -> CameraFrame:
+        raise NotImplementedError
+
+
+class Microphone(ABC):
+    @abstractmethod
+    def listen(self, duration_s: float | None = None) -> AudioSample:
         raise NotImplementedError

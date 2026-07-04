@@ -10,10 +10,26 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run fizmo tools against mock hardware.")
     parser.add_argument(
         "tool",
-        choices=["find_state", "halt", "stand", "sit", "lie_down", "walk", "run", "nod", "tilt_head"],
+        choices=[
+            "find_state",
+            "halt",
+            "stand",
+            "sit",
+            "lie_down",
+            "walk",
+            "run",
+            "nod",
+            "tilt_head",
+            "listen",
+            "speak",
+            "show_face",
+        ],
     )
     parser.add_argument("--steps", type=int, default=2)
     parser.add_argument("--direction", default="left")
+    parser.add_argument("--duration", type=float, default=None)
+    parser.add_argument("--text", default="Hello from Fizmo.")
+    parser.add_argument("--expression", default="idle")
     parser.add_argument("--log", action="store_true", help="Record command/result to behavior logs.")
     args = parser.parse_args()
 
@@ -26,6 +42,12 @@ def main() -> None:
         result = body.run(steps=args.steps)
     elif args.tool == "tilt_head":
         result = body.tilt_head(direction=args.direction)
+    elif args.tool == "listen":
+        result = runtime.interaction.listen(duration_s=args.duration)
+    elif args.tool == "speak":
+        result = runtime.interaction.speak(text=args.text)
+    elif args.tool == "show_face":
+        result = runtime.interaction.show_face(expression=args.expression, text=args.text)
     else:
         result = getattr(body, args.tool)()
 

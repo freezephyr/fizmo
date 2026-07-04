@@ -47,6 +47,31 @@ class CameraConfig:
 
 
 @dataclass(frozen=True)
+class AudioConfig:
+    microphone_kind: str = "usb_alsa"
+    input_device: str = "default"
+    sample_rate_hz: int = 16000
+    channels: int = 1
+    sample_width_bytes: int = 2
+    listen_seconds: float = 3.0
+    speech_rms_threshold: float = 0.01
+
+
+@dataclass(frozen=True)
+class SpeechToTextConfig:
+    provider: str = "mock"
+    model: str = "whisper"
+    language: str = "en"
+
+
+@dataclass(frozen=True)
+class TextModelConfig:
+    provider: str = "mock"
+    model: str = "mock-text"
+    system_prompt: str = "You are Fizmo, a small helpful robot."
+
+
+@dataclass(frozen=True)
 class LoggingConfig:
     enabled: bool = True
     directory: str = "logs/behavior"
@@ -73,6 +98,9 @@ class RobotConfig:
     imu: ImuConfig = field(default_factory=ImuConfig)
     display: DisplayConfig = field(default_factory=DisplayConfig)
     camera: CameraConfig = field(default_factory=CameraConfig)
+    audio: AudioConfig = field(default_factory=AudioConfig)
+    speech_to_text: SpeechToTextConfig = field(default_factory=SpeechToTextConfig)
+    text_model: TextModelConfig = field(default_factory=TextModelConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     agent: AgentConfig = field(default_factory=AgentConfig)
     leg_length_mm: float = 56.0
@@ -133,6 +161,25 @@ def load_robot_config(path: str | Path = "config/robot.ini") -> RobotConfig:
         camera=CameraConfig(
             kind=parser.get("camera", "kind", fallback=default.camera.kind),
             megapixels=parser.getint("camera", "megapixels", fallback=default.camera.megapixels),
+        ),
+        audio=AudioConfig(
+            microphone_kind=parser.get("audio", "microphone_kind", fallback=default.audio.microphone_kind),
+            input_device=parser.get("audio", "input_device", fallback=default.audio.input_device),
+            sample_rate_hz=parser.getint("audio", "sample_rate_hz", fallback=default.audio.sample_rate_hz),
+            channels=parser.getint("audio", "channels", fallback=default.audio.channels),
+            sample_width_bytes=parser.getint("audio", "sample_width_bytes", fallback=default.audio.sample_width_bytes),
+            listen_seconds=parser.getfloat("audio", "listen_seconds", fallback=default.audio.listen_seconds),
+            speech_rms_threshold=parser.getfloat("audio", "speech_rms_threshold", fallback=default.audio.speech_rms_threshold),
+        ),
+        speech_to_text=SpeechToTextConfig(
+            provider=parser.get("speech_to_text", "provider", fallback=default.speech_to_text.provider),
+            model=parser.get("speech_to_text", "model", fallback=default.speech_to_text.model),
+            language=parser.get("speech_to_text", "language", fallback=default.speech_to_text.language),
+        ),
+        text_model=TextModelConfig(
+            provider=parser.get("text_model", "provider", fallback=default.text_model.provider),
+            model=parser.get("text_model", "model", fallback=default.text_model.model),
+            system_prompt=parser.get("text_model", "system_prompt", fallback=default.text_model.system_prompt),
         ),
         logging=LoggingConfig(
             enabled=parser.getboolean("logging", "enabled", fallback=default.logging.enabled),
