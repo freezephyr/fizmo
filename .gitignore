@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+venv312/
+
+# Robot runtime output
+logs/
+ppo_nebbybot_log/
+*.zip
+
+# Local Codex/editor state
+.agents/
+.codex/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
